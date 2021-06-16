@@ -1,15 +1,43 @@
-# bb-mysql
-Building block for MySQL
+# General
 
-# IMAGE SOURCE
+## Deployment type
 
-Official image on __Docker Hob__: 
+Docker
 
-Licence: MySQL Community Edition, GPL License
+## Image
 
-# DEPLOYMENT
+Based on official image on Docker Hub: https://hub.docker.com/r/mysql/mysql-server
 
-> docker run -p 33306:3306 --name mysql-server -e MYSQL_ROOT_PASSWORD=r00tpass -d mysql/mysql-server:8.0.23
+## Licence
+
+MySQL Community Edition, GPL License
+
+## Version
+
+8.0.23
+
+## Description
+
+MySQL is one of the most popular relational database management system (RDBMS). Data are organised into tables, tables have columns, entries are rows. 
+
+
+# Deployment
+
+General example:
+
+```
+docker run -d --rm \
+        --name mysql
+        -p 33306:3306 \
+        mysql/mysql-server:8.0.23
+```
+## Parameters
+
+|Name|Value|Description|
+|-|-|-|
+|Ports| `-p 33306:3306` | MySQL port |
+|Volume| `-v $HOME:/var/lib/mysql` | Persist MySQL data |
+
 
 
 Further options:
