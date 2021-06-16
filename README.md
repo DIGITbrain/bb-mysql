@@ -36,90 +36,98 @@ docker run -d --rm \
 |Name|Value|Description|
 |-|-|-|
 |Ports| `-p 33306:3306` | MySQL port |
-|Volume| `-v $HOME:/var/lib/mysql` | Persist MySQL data |
+|Volume| `-v $HOME/mysqldata:/var/lib/mysql` | Persist MySQL data |
+|Environment| `-e MYSQL_DATABASE=mydatabase` | Initial database |
+|Environment| `-e MYSQL_ROOT_PASSWORD=mysqlrootpassword` | Root password |
+|Environment| `-e MYSQL_USER=mydatabaseuser` | User username |
+|Environment| `-e MYSQL_PASSWORD=mydatabasepassword` | User password |
 
+## Test:
 
+Run *mysql* client:
 
-Further options:
-VOLUMES:
-        -v $HOME:/var/lib/mysql
+> docker run -it mysql mysql
 
-OPTIONS:
+Note: 
+- use -hsome.mysql.host to connect to a remote MySQL host
 
-        -e MYSQL_DATABASE=mydatabase
-        -e MYSQL_USER=mydatabaseuser
-        -e MYSQL_PASSWORD=mydatabasepassword
+# Authentication
 
-EXAMPLE:
-docker run --name mysql-server -p 33306:3306 -e MYSQL_ROOT_PASSWORD=r00tpass -e MYSQL_DATABASE=test -e MYSQL_USER=testuser -e MYSQL_PASSWORD=testpass -d mysql/mysql-server:8.0.23
+See environment variables: MYSQL_USER, MYSQL_PASSWORD.
+Run:
 
-TEST:
+```
+docker run -d --rm \
+        --name mysql
+        -p 33306:3306 \
+        MYSQL_DATABASE=test \
+        -e MYSQL_USER=testuser \
+        -e MYSQL_PASSWORD=testpass \
+        mysql/mysql-server:8.0.23
+```
 
-> docker run -it --rm mysql mysql -hsome.mysql.host -usome-mysql-user -p
+## Test
+
+Run *mysql* client with username (testuser) and password (promted: testpass) :
+
+> docker run -it mysql mysql -utestuser -p
 
 
 # TLS
 
-__Enabled by default__, but when a client connects to MySQL server without providing proper TLS certificates, connection falls back to unencrypted one.
+Notes [1]: 
+- TLS is enabled by default, but when a client connects to MySQL server without providing proper TLS certificates, connection falls back to unencrypted one
+- MySQL automatically generates cerificates at startup in its data dir: /var/lib/mysql: ca.pem, private_key.pem, server-key.pem
+- you can use your own certs, if you specify them in /etc/my.cnf file: ssl-ca=/.../ca.pem, ssl-cert=/.../server-cert.pem, ssl-key=/.../server-key.pem
 
-MySQL automatically generates cerificates at startup in its data dir: /var/lib/mysql: __ca.pem, private_key.pem, server-key.pem__.
-
-
-See:
-https://www.howtoforge.com/tutorial/how-to-enable-ssl-and-remote-connections-for-mysql-on-centos-7/
-
-__Note:__ you can use your own certs, if you specify them in /etc/my.cnf file: ssl-ca=/.../ca.pem, ssl-cert=/.../server-cert.pem, ssl-key=/.../server-key.pem.
-
-## TEST
+## Test
 
 Fall back to non-TLS:
 
-> docker exec -it mysql-server mysql -p
->
-> mysql> status
->
-> mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
->
-> ...
->
-> __SSL:			Not in use__
+```
+docker exec -it mysql-server mysql -p
+mysql> status
+mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
+...
+SSL:			Not in use
+```
 
 TLS:
-
-> docker exec -it mysql-server mysql -p __--ssl-ca=/var/lib/mysql/ca.pem__
->
-> mysql> status
->
-> mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
->
-> ...
->
-> __SSL:			Cipher in use is ECDHE-RSA-AES128-GCM-SHA256__
+```
+docker exec -it mysql-server mysql -p --ssl-ca=/var/lib/mysql/ca.pem
+mysql> status
+mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
+...
+SSL:			Cipher in use is ECDHE-RSA-AES128-GCM-SHA256
+```
 
 
+# TLS mutual
 
-# TLS mutual authentication
+Users can be forced to use TLS [1]:
 
-Users can force to use TLS:
+```
+create user 'user'@'%' identified by 'pass' REQUIRE X509;
+grant all privileges on *.* to 'user'@'%' identified by 'pass' REQUIRE X509;
+flush privileges;
+```
 
-> create user 'user'@'%' identified by 'pass' REQUIRE X509;
->
-> grant all privileges on *.* to 'user'@'%' identified by 'pass' REQUIRE X509;
->
-> flush privileges;
 
-See:
-https://www.howtoforge.com/tutorial/how-to-enable-ssl-and-remote-connections-for-mysql-on-centos-7/
+## Test
 
-## TEST
 TLS with client authentication (user REQUIRE X509): 
 
-> docker exec -it mysql-server mysql -p __--ssl-ca=/var/lib/mysql/ca.pem --ssl-cert=/var/lib/mysql/client-cert.pem --ssl-key=/var/lib/mysql/client-key.pem__
->
-> mysql> status
->
-> mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
->
-> ...
->
-> __SSL:			Cipher in use is ECDHE-RSA-AES128-GCM-SHA256__
+```
+docker exec -it mysql-server mysql -p --ssl-ca=/var/lib/mysql/ca.pem --ssl-cert=/var/lib/mysql/client-cert.pem --ssl-key=/var/lib/mysql/client-key.pem
+
+mysql> status
+mysql  Ver 8.0.23 for Linux on x86_64 (MySQL Community Server - GPL)
+...
+SSL:			Cipher in use is ECDHE-RSA-AES128-GCM-SHA256
+```
+
+# References
+
+[1] https://www.howtoforge.com/tutorial/how-to-enable-ssl-and-remote-connections-for-mysql-on-centos-7/
+
+
