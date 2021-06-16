@@ -46,10 +46,12 @@ docker run -d --rm \
 
 Run *mysql* client:
 
-> docker run -it mysql mysql
+```
+docker run -it mysql mysql
+```
 
 Note: 
-- use -hsome.mysql.host to connect to a remote MySQL host
+- use -hsome.mysql.host to connect to a remote MySQL host (some.mysql.host)
 
 # Authentication
 
@@ -70,8 +72,9 @@ docker run -d --rm \
 
 Run *mysql* client with username (testuser) and password (promted: testpass) :
 
-> docker run -it mysql mysql -utestuser -p
-
+```
+docker run -it mysql mysql -utestuser -p
+```
 
 # TLS
 
