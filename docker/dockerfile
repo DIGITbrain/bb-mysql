@@ -4,13 +4,15 @@
 FROM mysql/mysql-server:8.0.27
 
 RUN mkdir /etc/certs
+
 COPY ./certificates/ca.pem /etc/certs/ca.pem
 COPY ./certificates/server-key.pem /etc/certs/server-key.pem
 COPY ./certificates/server-cert.pem /etc/certs/server-cert.pem
 RUN chmod 600 /etc/certs/*
 RUN chown mysql:mysql /etc/certs/*
 
-RUN echo "ssl-ca=/etc/certs/ca.pem" >> etc/my.cnf; \
+RUN echo "# === new part ===" >> etc/my.cnf; \
+    echo "ssl-ca=/etc/certs/ca.pem" >> etc/my.cnf; \
     echo "ssl-key=/etc/certs/server-key.pem" >> etc/my.cnf; \
     echo "ssl-cert=/etc/certs/server-cert.pem" >> etc/my.cnf; \
     echo "bind-address=0.0.0.0" >> etc/my.cnf; \

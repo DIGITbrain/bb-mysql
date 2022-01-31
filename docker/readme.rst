@@ -29,8 +29,8 @@ Usage
 
   docker run -d --rm --name mysql \
     -e MYSQL_DATABASE=mydatabase \
-    -e MYSQL_USER=mydatabaseuser \
-    -e MYSQL_PASSWORD=mydatabasepassword \
+    -e MYSQL_USER=myuser \
+    -e MYSQL_PASSWORD=mypassword \
     -p 3306:3306/tcp \
     mysql-server:8.0.27
 
@@ -48,7 +48,7 @@ The image uses **SSL/TLS traffic encryption** and **username-password authentica
 
 .. warning::
   Although SSL/TLS is enabled by default in MySQL, when a client connects 
-  without certificate or any --ssl option, the connection falls back to unencrypted.
+  without a certificate, the connection falls back to non-encrypted one.
   You can check whether SSL is in use:
 
   .. code-block:: bash
@@ -58,48 +58,34 @@ The image uses **SSL/TLS traffic encryption** and **username-password authentica
       ...
       SSL:			Cipher in use is TLS_AES_256_GCM_SHA384
 
-Consider using --ssl-mode=VERIFY_IDENTITY as a best practice. The server certificate used in the image is 
-signed by DIGITbrain certificate authority, but obviously host name verification will fail. 
-You should use the server certificate of your own (see Configuration, ssl-* volumes below).
+Consider using ``--ssl-mode=VERIFY_IDENTITY`` as a best practice. However, the default server certificate in this docker image
+had been signed by the DIGITbrain Certificate Authority with the host IP inside that will not match your host IP, and so hostname verification will fail.
+Use a server certificate of your own (with a proper IP or SAN) to enable this mode (see Configuration of certificates below) or 
+use  ``--ssl-mode=VERIFY_CA`` or ``--ssl-mode=REQUIRED`` to bypass hostname verification.
 TLS client authentication is also configurable (see [4]_).
 
 Configuration
 =============
-A more a customized run example:
 
-.. code-block:: bash
-  docker run -d --rm --name mysql \
-    -v $PWD/data:/var/lib/mysql \
-    -e MYSQL_ROOT_PASSWORD=mysqlrootpassword
-    -e MYSQL_DATABASE=mydatabase \
-    -e MYSQL_USER=mydatabaseuser \
-    -e MYSQL_PASSWORD=mydatabasepassword \
-    -p 3306:3306/tcp \
-    mysql-server:8.0.27
-
-where we set 'root' password for MySQL database server and persist MySQL data on host directory: ``./data``.
-
-See parameters and volumes below for explanation.
-
-Parameters
-----------
+Environment variables
+---------------------
 .. list-table:: 
    :header-rows: 1
 
    * - Name
      - Example
      - Comment
-   * - *database*
+   * - *MYSQL_DATABASE*
      - ``-e MYSQL_DATABASE=mydatabase``
      - An initial database to create
-   * - *root password*
+   * - *MYSQL_ROOT_PASSWORD*
      - ``-e MYSQL_ROOT_PASSWORD=mysqlrootpassword``
      - Root password for MySQL
-   * - *username*
-     - ``-e MYSQL_USER=mydatabaseuser``
+   * - *MYSQL_USER*
+     - ``-e MYSQL_USER=myusername``
      - Username for a newly created user
-   * - *password*
-     - ``-e MYSQL_PASSWORD=mydatabasepassword``
+   * - *MYSQL_PASSWORD*
+     - ``-e MYSQL_PASSWORD=mypassword``
      - Password for a newly created user
 
 Ports
@@ -125,15 +111,15 @@ Volumes
   * - *MySQL data*    
     - ``-v $PWD/data:/var/lib/mysql``
     - MySQL data will be persisted in host directory: ``./data``.
-  * - *MySQL CA certificate*    
+  * - *CA certificate*    
     - ``-v $PWD/certificates/ca.pem:/etc/certs/ca.pem``  
-    - Certificate Authority caertificate
-  * - *MySQL server key*    
-    - ``-v $PWD/certificates/server-key.pem:/etc/certs/server-key.pem``  
-    - Server key file in PEM format
-  * - *MySQL server certificate*    
+    - Certificate Authority certificate (in PEM format)
+  * - *Server certificate*    
     - ``-v $PWD/certificates/server-cert.pem:/etc/certs/server-cert.pem``  
-    - Server certificate in PEM format
+    - Server certificate (in PEM format)
+  * - *Server key*    
+    - ``-v $PWD/certificates/server-key.pem:/etc/certs/server-key.pem``  
+    - Server key file (in PEM format)
 
 References
 ==========
