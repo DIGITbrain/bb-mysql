@@ -14,11 +14,11 @@ MySQL Community Edition, GPL License
 
 ## Version
 
-8.0.23
+8.0.32
 
 ## Description
 
-MySQL is one of the most popular relational database management system (RDBMS). Data are organised into tables, tables have columns, entries are rows. 
+MySQL is one of the most popular relational database management system (RDBMS). Data are organised into tables, tables have columns, entries are rows.
 
 
 # Deployment
@@ -50,7 +50,7 @@ Run *mysql* client:
 docker run -it mysql mysql
 ```
 
-Note: 
+Note:
 - use -hsome.mysql.host to connect to a remote MySQL host (some.mysql.host)
 
 # Authentication
@@ -78,7 +78,7 @@ docker run -it mysql mysql -utestuser -p
 
 # TLS
 
-Notes [1]: 
+Notes [1]:
 - TLS is enabled by default, but when a client connects to MySQL server without providing proper TLS certificates, connection falls back to unencrypted one
 - MySQL automatically generates cerificates at startup in its data dir: /var/lib/mysql: ca.pem, private_key.pem, server-key.pem
 - you can use your own certs, if you specify them in /etc/my.cnf file: ssl-ca=/.../ca.pem, ssl-cert=/.../server-cert.pem, ssl-key=/.../server-key.pem
@@ -118,7 +118,7 @@ flush privileges;
 
 ## Test
 
-TLS with client authentication (user REQUIRE X509): 
+TLS with client authentication (user REQUIRE X509):
 
 ```
 docker exec -it mysql-server mysql -p --ssl-ca=/var/lib/mysql/ca.pem --ssl-cert=/var/lib/mysql/client-cert.pem --ssl-key=/var/lib/mysql/client-key.pem
